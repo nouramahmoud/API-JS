@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="style.css">
+	 
+</head>
+<body>
+	<h1>Welcome to firebase database</h1>
+   <table style="width:100%" class="table"  id="usersTable">
+  <tr>
+    <th scope="col">link</th>
+    <th scope="col">delete</th>
+  </tr>
+
+</table> 
+
+		<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+		<script src="https://kit.fontawesome.com/a87fc00b65.js" crossorigin="anonymous"></script>
+		<script>
+			const DATABASE_HOST = "https://cloudtest-bb313.firebaseio.com/";
+			const USERS_DATABASE_NAME = "messages";
+			const USERS_DATABASE_URL = DATABASE_HOST + USERS_DATABASE_NAME + ".json";
+
+			let links = {};
+
+			$(document).ready(function() {
+			
+				getuser();
+				drawTable();
+				setInterval(drawTable, 500);
+				setInterval(getuser, 2000);
+			});
+
+
+
+
+			function put(user)
+			{
+				$.ajax({
+					accept: "application/json",
+					type: "POST",
+					contentType: "application/json",
+					url: USERS_DATABASE_URL,
+					data: JSON.stringify(user),
+					success: function(data) {
+						links.data = user;
+					}
+				});
+			}
+
+			function getuser()
+			{
+				$.get(USERS_DATABASE_URL, (data) => {
+
+					if(data) {
+						links = data;
+					} else {
+						links = {};
+					}
+				});
+			}
+
+			function drawTable(tableId)
+			{
+				let tableBody = $("#usersTable tbody")
+				tableBody.empty()
+				let count = 0;
+				Object.keys(links).forEach(function(id) {
+					tableBody.append(makeUserRow(links[id], id, count+1));
+					count++;
+				});
+			}
+
+
+			function makeUserRow(user, id, number)
+			{
+				return `
+				<tr>
+					<th scope="row">${number}</th>
+					<td>
+						${user}
+						
+					</td>
+					<td><a href="javascript:deleteUser('${id}')">delete</a></td>
+				</tr>
+				`;
+			}
+
+
+			function deleteUser(id)
+			{
+				$.ajax({
+					accept: "application/json",
+					type: "DELETE",
+					contentType: "application/json",
+					url: DATABASE_HOST+USERS_DATABASE_NAME+"/"+id+".json",
+					success: function() {
+						delete links.id;
+						
+					}
+				});
+			}
+		</script> 
+</body>
+</html>
